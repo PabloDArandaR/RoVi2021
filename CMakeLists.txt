@@ -1,5 +1,56 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.1.0)
 
 project(RoVi2021)
+# Used to resolve absolute path names
+SET(ROOT ${CMAKE_CURRENT_SOURCE_DIR})
+SET(ROBOT ${ROOT}/src/mainrob.cpp)
+SET(VISION ${ROOT}/src/mainvis.cpp)
 
-add_compile_options(-c++=11)
+# Setting up compiler version
+add_compile_options(-std=c++11)
+
+# Add the folder with include files
+include_directories(${ROOT}/include)
+
+# Set the RobWork root (edit in .bashrc if necessary)
+SET(RW_ROOT $ENV{RW_ROOT})
+SET(RobWork_DIR ${RW_ROOT}/cmake)
+SET(RWSTUDIO_ROOT $ENV{RWS_ROOT})
+SET(RobWorkStudio_DIR ${RWSTUDIO_ROOT}/cmake)
+
+# Verbose mode prints more info when doing make
+set(CMAKE_VERBOSE_MAKEFILE false)
+
+# Various setups
+SET(CMAKE_MODULE_PATH ${RW_ROOT}/build ${CMAKE_MODULE_PATH})
+SET(CMAKE_MODULE_PATH ${RWSTUDIO_ROOT}/build ${CMAKE_MODULE_PATH})
+
+# Use RobWork 
+find_package(RobWork REQUIRED)
+include_directories( ${ROBWORK_INCLUDE_DIRS} )
+link_directories( ${ROBWORK_LIBRARY_DIRS} )
+add_definitions(${ROBWORK_DEFINITIONS})
+
+# Use RobWorkStudio
+FIND_PACKAGE(RobWorkStudio REQUIRED)
+INCLUDE_DIRECTORIES( ${ROBWORKSTUDIO_INCLUDE_DIRS} )
+LINK_DIRECTORIES( ${ROBWORKSTUDIO_LIBRARY_DIRS} )
+
+# Use PCL
+#[[find_package(PCL REQUIRED)
+include_directories(${PCL_SEARC_INCLUDE_DIRS})
+link_directories(${PCL_SEARCH_LIBRARY_DIRS})
+add_definitions(${PCL_SEARCH_DEFINITIONS})]]
+
+find_package(OpenCV 4.2.0 REQUIRED)
+include_directories(${OPENCV_INCLUDE_DIRS})
+link_directories(${OPENCV_LIBRARY_DIRS})
+add_definitions(${OPENCV_DEFINITIONS})
+
+# plugin
+include_directories(PRIVATE resources/RoviSamplePlugin/src)
+
+add_executable(robot src/mainrob.cpp)
+add_executable(vision src/mainvis.cpp)
+target_link_libraries(vision ${ROBWORK_LIBRARIES})
+target_link_libraries(robot ${ROBWORK_LIBRARIES})
