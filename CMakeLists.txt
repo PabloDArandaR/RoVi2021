@@ -15,15 +15,21 @@ include_directories(${ROOT}/include)
 # Set the RobWork root (edit in .bashrc if necessary)
 SET(RW_ROOT $ENV{RW_ROOT})
 SET(RobWork_DIR ${RW_ROOT}/cmake)
+#[[set(OPENCV_ROOT $ENV{OPENCV_ROOT})
+set(OpenCV_DIR ${OPENCV_ROOT}/cmake)]]
 SET(RWSTUDIO_ROOT $ENV{RWS_ROOT})
 SET(RobWorkStudio_DIR ${RWSTUDIO_ROOT}/cmake)
+SET(RWSIMULATION_ROOT $ENV{RWSIM_ROOT})
+SET(RobWorkSim_DIR ${RWSIMULATION_ROOT}/cmake)
 
 # Verbose mode prints more info when doing make
 set(CMAKE_VERBOSE_MAKEFILE false)
 
 # Various setups
 SET(CMAKE_MODULE_PATH ${RW_ROOT}/build ${CMAKE_MODULE_PATH})
+SET(CMAKE_MODULE_PATH ${OPENCV_ROOT}/build ${CMAKE_MODULE_PATH})
 SET(CMAKE_MODULE_PATH ${RWSTUDIO_ROOT}/build ${CMAKE_MODULE_PATH})
+SET(CMAKE_MODULE_PATH ${RWSIM_ROOT}/build ${CMAKE_MODULE_PATH})
 
 # Use RobWork 
 find_package(RobWork REQUIRED)
@@ -32,9 +38,14 @@ link_directories( ${ROBWORK_LIBRARY_DIRS} )
 add_definitions(${ROBWORK_DEFINITIONS})
 
 # Use RobWorkStudio
-FIND_PACKAGE(RobWorkStudio REQUIRED)
+#[[FIND_PACKAGE(RobWorkStudio REQUIRED)
 INCLUDE_DIRECTORIES( ${ROBWORKSTUDIO_INCLUDE_DIRS} )
 LINK_DIRECTORIES( ${ROBWORKSTUDIO_LIBRARY_DIRS} )
+
+# Use RobWorkStudio
+FIND_PACKAGE(RobWorkSim REQUIRED)
+INCLUDE_DIRECTORIES( ${ROBWORKSTUDIO_INCLUDE_DIRS} )
+LINK_DIRECTORIES( ${ROBWORKSTUDIO_LIBRARY_DIRS} )]]
 
 # Use PCL
 #[[find_package(PCL REQUIRED)
@@ -42,7 +53,7 @@ include_directories(${PCL_SEARC_INCLUDE_DIRS})
 link_directories(${PCL_SEARCH_LIBRARY_DIRS})
 add_definitions(${PCL_SEARCH_DEFINITIONS})]]
 
-find_package(OpenCV 4.2.0 REQUIRED)
+find_package(OpenCV REQUIRED)
 include_directories(${OPENCV_INCLUDE_DIRS})
 link_directories(${OPENCV_LIBRARY_DIRS})
 add_definitions(${OPENCV_DEFINITIONS})
@@ -50,7 +61,14 @@ add_definitions(${OPENCV_DEFINITIONS})
 # plugin
 include_directories(PRIVATE resources/RoviSamplePlugin/src)
 
-add_executable(robot src/mainrob.cpp)
-add_executable(vision src/mainvis.cpp)
-target_link_libraries(vision ${ROBWORK_LIBRARIES})
-target_link_libraries(robot ${ROBWORK_LIBRARIES})
+#add_executable(rrt src/rrt.cpp)
+add_executable(dense src/denseStereo.cpp)
+add_executable(pointToPoint src/pointToPoint.cpp)
+add_executable(pointToPointBlend src/pointToPointBlend.cpp)
+add_executable(parabolicBlend src/blend.cpp)
+
+#target_link_libraries(rrt ${ROBWORK_LIBRARIES} ${OpenCV_LIBS})
+target_link_libraries(dense ${ROBWORK_LIBRARIES} ${OpenCV_LIBS})
+target_link_libraries(pointToPoint ${ROBWORK_LIBRARIES} ${OpenCV_LIBS})
+target_link_libraries(pointToPointBlend ${ROBWORK_LIBRARIES} ${OpenCV_LIBS})
+target_link_libraries(parabolicBlend ${ROBWORK_LIBRARIES} ${OpenCV_LIBS})
