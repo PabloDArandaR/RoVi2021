@@ -8,8 +8,10 @@
 #include <rwlibs/pathplanners/rrt/RRTPlanner.hpp>
 #include <rwlibs/pathplanners/rrt/RRTQToQPlanner.hpp>
 #include <rwlibs/proximitystrategies/ProximityStrategyFactory.hpp>
-#include <rw/kinematics/Kinematics.hpp>
-#include <rw/trajectory/RampInterpolator.hpp>
+//#include <rw/kinematics/Kinematics.hpp>
+//#include <rw/trajectory/RampInterpolator.hpp>
+#include <rw/trajectory/BlendedTrajectory.hpp>
+//#include <rw/trajectory.hpp>
 
 #include "interpol.cpp"
 
@@ -33,7 +35,7 @@ int main()
     std::string pathName {"pointToPoint.csv"};
     std::fstream data;
     int nApprox {100}, nPoint{100}, nBlend{10};
-    int tau {1};
+    double tau {0.02};
 
     // Initiate State and WorkCell
     Cell::Ptr wc = rw::loaders::WorkCellLoader::Factory::load(wcFile);
@@ -56,6 +58,7 @@ int main()
     rw::math::Q P6(6,-0.237, 0.0000, -1.949, -3.112, 0.0000, 0);
     rw::math::Q bottlePoint(6, 1.806, -1.510, -1.822, -1.319, 1.571, 0);
     std::vector<rw::math::Q> approximation1, approximation2, wholePath;
+    std::vector<double> timeVector;
     
 
     // Add points to the path
@@ -63,20 +66,21 @@ int main()
 
     approximation2.push_back(P5); approximation2.push_back(P6); approximation2.push_back(P5);
 
-    wholePath.push_back(initial); wholePath.push_back(P1); wholePath.push_back(P2); wholePath.push_back(P3); wholePath.push_back(P4); wholePath.push_back(P5); 
+    wholePath.push_back(initial); wholePath.push_back(P1);  wholePath.push_back(P2);    wholePath.push_back(P3);    wholePath.push_back(P4);    wholePath.push_back(P5); 
+    /* timeVector.push_back(0); */      timeVector.push_back(5);  timeVector.push_back(10);   timeVector.push_back(15);   timeVector.push_back(20);   /* timeVector.push_back(25); */
     
     std::cout << "The points for approximation 1 are: \n";
-    for (int i = 0; i < approximation1.size(); i++)
+    for (uint i = 0; i < approximation1.size(); i++)
     {
         std::cout <<"     -" << approximation1[i] << std::endl;
     }
     std::cout << "The points for wholePath are: \n";
-    for (int i = 0; i < wholePath.size(); i++)
+    for (uint i = 0; i < wholePath.size(); i++)
     {
         std::cout <<"     -" << wholePath[i] << std::endl;
     }
     std::cout << "The points for approximation 2 are: \n";
-    for (int i = 0; i < approximation2.size(); i++)
+    for (uint i = 0; i < approximation2.size(); i++)
     {
         std::cout <<"     -" << approximation2[i] << std::endl;
     }
@@ -98,7 +102,7 @@ int main()
 
     std::cout << "HERE" << std::endl;
 
-    for (uint i = 0; i < approximation1.size()-1; i++)
+     for (uint i = 0; i < approximation1.size()-1; i++)
     {
         rw::trajectory::LinearInterpolator<rw::math::Q> interpolator(approximation1[i], approximation1[i+1], approxDuration);
         precision = approxDuration/nApprox;
@@ -120,11 +124,11 @@ int main()
     std::cout << "HERE" << std::endl;
     
     std::cout << "the total number of elements in wholePath is: " << wholePath.size() << std::endl;
-    for (uint i = 0; i < wholePath.size()-3; i += 1)
+    /*for (uint i = 0; i < wholePath.size()-2; i += 2)
     {
         std::cout << "Iteration number: " << i << std::endl;
         rw::trajectory::LinearInterpolator<rw::math::Q> interpolator1(wholePath[i], wholePath[i+1], approxDuration);
-        rw::trajectory::LinearInterpolator<rw::math::Q> interpolator2(wholePath[i+1], wholePath[i+3], approxDuration);
+        rw::trajectory::LinearInterpolator<rw::math::Q> interpolator2(wholePath[i+1], wholePath[i+2], approxDuration);
         std::cout << "The points used are: \n    -" << wholePath[i] << "\n    -" << wholePath[i+1] << "\n    -" << wholePath[i+2] << "\n    -" << wholePath[i+3] << std::endl;
         rw::trajectory::ParabolicBlend<rw::math::Q> interpolatorB(interpolator1, interpolator2, tau);
         precision = approxDuration/nPoint;
@@ -174,7 +178,12 @@ int main()
             
             time_ += precision;
         }
-    }
+    }*/
+
+
+    //rw::trajectory::BlendedTrajectory<rw::math::Q> pathInterpolator(device, wholePath, timeVector,1,1);
+    //std::cout << "The duration of the trajectory is:  " << pathInterpolator.duration() << std::endl;
+    //std::cout << "The startTime of the trajectory is:  " << pathInterpolator.startTime() << std::endl;
 
     std::cout << "HERE" << std::endl;
     for (uint i = 0; i < approximation2.size(); i++)
@@ -194,7 +203,9 @@ int main()
             
             time_ += precision;
         }
-    }
+    } 
+
+
     std::cout << "HERE" << std::endl;
     data.close();
     rw::loaders::PathLoader::storeTimedStatePath(*wc, tStatePath, "pathBlend.rwplay");

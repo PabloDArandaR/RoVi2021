@@ -48,10 +48,10 @@ INCLUDE_DIRECTORIES( ${ROBWORKSTUDIO_INCLUDE_DIRS} )
 LINK_DIRECTORIES( ${ROBWORKSTUDIO_LIBRARY_DIRS} )]]
 
 # Use PCL
-#[[find_package(PCL REQUIRED)
+find_package(PCL REQUIRED)
 include_directories(${PCL_SEARC_INCLUDE_DIRS})
 link_directories(${PCL_SEARCH_LIBRARY_DIRS})
-add_definitions(${PCL_SEARCH_DEFINITIONS})]]
+add_definitions(${PCL_SEARCH_DEFINITIONS})
 
 find_package(OpenCV REQUIRED)
 include_directories(${OPENCV_INCLUDE_DIRS})
