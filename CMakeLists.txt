@@ -12,7 +12,7 @@ add_compile_options(-std=c++11)
 # Add the folder with include files
 include_directories(${ROOT}/include)
 
-# Set the RobWork root (edit in .bashrc if necessary)
+# Set the RobWork root
 SET(RW_ROOT $ENV{RW_ROOT})
 SET(RobWork_DIR ${RW_ROOT}/cmake)
 #[[set(OPENCV_ROOT $ENV{OPENCV_ROOT})
@@ -31,7 +31,7 @@ SET(CMAKE_MODULE_PATH ${OPENCV_ROOT}/build ${CMAKE_MODULE_PATH})
 SET(CMAKE_MODULE_PATH ${RWSTUDIO_ROOT}/build ${CMAKE_MODULE_PATH})
 SET(CMAKE_MODULE_PATH ${RWSIM_ROOT}/build ${CMAKE_MODULE_PATH})
 
-# Use RobWork 
+# Use RobWork
 find_package(RobWork REQUIRED)
 include_directories( ${ROBWORK_INCLUDE_DIRS} )
 link_directories( ${ROBWORK_LIBRARY_DIRS} )
@@ -45,30 +45,28 @@ LINK_DIRECTORIES( ${ROBWORKSTUDIO_LIBRARY_DIRS} )
 # Use RobWorkStudio
 FIND_PACKAGE(RobWorkSim REQUIRED)
 INCLUDE_DIRECTORIES( ${ROBWORKSTUDIO_INCLUDE_DIRS} )
-LINK_DIRECTORIES( ${ROBWORKSTUDIO_LIBRARY_DIRS} )]]
+LINK_DIRECTORIES( ${ROBWORKSTUDIO_LIBRARY_DIRS})]]
 
 # Use PCL
-find_package(PCL REQUIRED)
+find_package(PCL 1.3 REQUIRED COMPONENTS common io)
 include_directories(${PCL_SEARC_INCLUDE_DIRS})
 link_directories(${PCL_SEARCH_LIBRARY_DIRS})
 add_definitions(${PCL_SEARCH_DEFINITIONS})
 
-find_package(OpenCV REQUIRED)
+#[[find_package(OpenCV REQUIRED)
 include_directories(${OPENCV_INCLUDE_DIRS})
 link_directories(${OPENCV_LIBRARY_DIRS})
-add_definitions(${OPENCV_DEFINITIONS})
+add_definitions(${OPENCV_DEFINITIONS}))]]
 
 # plugin
 include_directories(PRIVATE resources/RoviSamplePlugin/src)
 
-#add_executable(rrt src/rrt.cpp)
-add_executable(dense src/denseStereo.cpp)
-add_executable(pointToPoint src/pointToPoint.cpp)
-add_executable(pointToPointBlend src/pointToPointBlend.cpp)
-add_executable(parabolicBlend src/blend.cpp)
+add_executable(rrt src/rob/RRT.cpp)
+add_executable(dense src/vision/denseStereo.cpp)
+add_executable(pointToPoint src/rob/pointToPoint.cpp)
+add_executable(parabolicBlend src/rob/parabolicBlend.cpp)
 
-#target_link_libraries(rrt ${ROBWORK_LIBRARIES} ${OpenCV_LIBS})
+target_link_libraries(rrt ${ROBWORK_LIBRARIES} ${OpenCV_LIBS})
 target_link_libraries(dense ${ROBWORK_LIBRARIES} ${OpenCV_LIBS})
 target_link_libraries(pointToPoint ${ROBWORK_LIBRARIES} ${OpenCV_LIBS})
-target_link_libraries(pointToPointBlend ${ROBWORK_LIBRARIES} ${OpenCV_LIBS})
 target_link_libraries(parabolicBlend ${ROBWORK_LIBRARIES} ${OpenCV_LIBS})
