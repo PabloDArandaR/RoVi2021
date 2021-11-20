@@ -12,18 +12,24 @@
 #include <rw/kinematics/Kinematics.hpp>
 #include <rw/sensor/Camera.hpp>
 #include <rwlibs/simulation/SimulatedCamera.hpp>
+#include <rw/core/PropertyMap.hpp>
+#include <rw/core/Ptr.hpp>
+#include <rw/kinematics/State.hpp>
+#include <rw/loaders/WorkCellLoader.hpp>
+#include <rwlibs/simulation/GLFrameGrabber.hpp>
+#include <rwslibs/rwstudioapp/RobWorkStudioApp.hpp>
 
 #include <opencv2/opencv.hpp>
 #include <opencv2/calib3d.hpp>
 #include <opencv2/core.hpp>
 
-#include <pcl/point_types.h>
-#include <pcl/point_cloud.h>
-#include <pcl/io/io.h>
-#include <pcl/io/pcd_io.h>
+//#include <pcl/point_types.h>
+//#include <pcl/point_cloud.h>
+//#include <pcl/io/io.h>
+//#include <pcl/io/pcd_io.h>
 
-using pclPoint = pcl::PointXYZRGB;
-using pclCloud = pcl::PointCloud<pclPoint>;
+//using pclPoint = pcl::PointXYZRGB;
+//using pclCloud = pcl::PointCloud<pclPoint>;
 
 typedef rw::models::WorkCell Cell;
 typedef rw::kinematics::Frame Frame;
@@ -94,7 +100,7 @@ cv::Mat reproject3D(cv::Mat disp, cv::Mat Q)
     return points;
 }
 
-pclCloud::Ptr savePointCloud(std::string filename, cv::Mat points, cv::Mat colors, double max_z) {
+/* pclCloud::Ptr savePointCloud(std::string filename, cv::Mat points, cv::Mat colors, double max_z) {
     pclPoint p_default;
     pclCloud::Ptr dst(new pclCloud(points.rows, points.cols, p_default));
     for (size_t i = 0; i < points.rows; i++) {
@@ -117,9 +123,9 @@ pclCloud::Ptr savePointCloud(std::string filename, cv::Mat points, cv::Mat color
     pcl::io::savePCDFileASCII(filename, *dst);
 
     return dst;
-}
+} */
 
-pclCloud::Ptr obtainPointCloud(cv::Mat points, cv::Mat colors, double max_z) {
+/* pclCloud::Ptr obtainPointCloud(cv::Mat points, cv::Mat colors, double max_z) {
     pclPoint p_default;
     pclCloud::Ptr dst(new pclCloud(points.rows, points.cols, p_default));
     for (size_t i = 0; i < points.rows; i++) {
@@ -141,7 +147,7 @@ pclCloud::Ptr obtainPointCloud(cv::Mat points, cv::Mat colors, double max_z) {
     }
 
     return dst;
-}
+} */
 
 int main()
 {
@@ -149,6 +155,7 @@ int main()
     // Initialize
     const std::string wcFile = "../resources/Project_WorkCell/Scene.wc.xml";
     std::cout << "Trying to use workcell " << wcFile <<  std::endl;
+    std::string deviceName = "UR-6-85-5-A";
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Set some variables
@@ -175,7 +182,17 @@ int main()
     Frame *leftCamera_frame = wc->findFrame("Left_Camera");
     Frame *rightCamera_frame = wc->findFrame("Right_Camera");
 
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //rwRobWorkStudioApp app ("simulation");
+    //RWS_START(app);
+    {
+
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    // Obtain the images
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -186,7 +203,7 @@ int main()
         //Since the cameras are parallel, the images are rectified already
 
     // Compute disparity map
-    cv::Mat colors = imgL;
+    cv::Mat colors = left;
     cv::cvtColor(right, right, cv::COLOR_RGB2GRAY);
     cv::cvtColor(left, left, cv::COLOR_RGB2GRAY);
 
@@ -194,7 +211,7 @@ int main()
 
     // Compute point cloud
     cv::Mat points = reproject3D(disp, defineQ(width, height));
-    pclCloud::Ptr pointCloud = obtainPointCloud(std::string filename, cv::Mat points, cv::Mat colors, double max_z)
+    //pclCloud::Ptr pointCloud = obtainPointCloud(std::string filename, cv::Mat points, cv::Mat colors, double max_z)
 
     // Filter/segment the point cloud
 
