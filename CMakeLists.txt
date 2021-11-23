@@ -16,8 +16,6 @@ include_directories(${Qt5Widgets_INCLUDE_DIRS})
 # Set the RobWork root
 SET(RW_ROOT $ENV{RW_ROOT})
 SET(RobWork_DIR ${RW_ROOT}/cmake)
-#[[set(OPENCV_ROOT $ENV{OPENCV_ROOT})
-set(OpenCV_DIR ${OPENCV_ROOT}/cmake)]]
 SET(RWSTUDIO_ROOT $ENV{RWS_ROOT})
 SET(RobWorkStudio_DIR ${RWSTUDIO_ROOT}/cmake)
 SET(RWSIMULATION_ROOT $ENV{RWSIM_ROOT})
@@ -52,21 +50,23 @@ add_definitions(${ROBWORK_DEFINITIONS})
 FIND_PACKAGE(RobWorkStudio REQUIRED)
 INCLUDE_DIRECTORIES( ${ROBWORKSTUDIO_INCLUDE_DIRS} )
 LINK_DIRECTORIES( ${ROBWORKSTUDIO_LIBRARY_DIRS} )
+add_definitions(${ROBWORKSTUDIO_DEFINITIONS})
 
 # Use RobWorkStudio
 FIND_PACKAGE(RobWorkSim REQUIRED)
-INCLUDE_DIRECTORIES( ${ROBWORKSTUDIO_INCLUDE_DIRS} )
-LINK_DIRECTORIES( ${ROBWORKSTUDIO_LIBRARY_DIRS})
+INCLUDE_DIRECTORIES( ${ROBWORKSIM_INCLUDE_DIRS} )
+LINK_DIRECTORIES( ${ROBWORKSIM_LIBRARY_DIRS})
+add_definitions(${ROBWORKSIM_DEFINITIONS})
 
 # Use PCL
-find_package(PCL 1.3 REQUIRED COMPONENTS common io)
-include_directories(${PCL_SEARC_INCLUDE_DIRS})
-link_directories(${PCL_SEARCH_LIBRARY_DIRS})
-add_definitions(${PCL_SEARCH_DEFINITIONS})
-
+#find_package(PCL 1.3 REQUIRED COMPONENTS common io)
+#include_directories(${PCL_INCLUDE_DIRS})
+#link_directories(${PCL_LIBRARY_DIRS})
+#add_definitions(${PCL_DEFINITIONS})
 
 # plugin
-include_directories(PRIVATE resources/RoviSamplePlugin/src)
+#include_directories(PRIVATE resources/RoviSamplePlugin/src)
+include_directories(${OPENCV_INCLUDE_DIRS} ${ROBWORK_INCLUDE_DIRS} ${ROBWORKSTUDIO_INCLUDE_DIRS} ${ROBWORKSIM_INCLUDE_DIRS})
 
 add_executable(rrt src/rob/RRT.cpp)
 add_executable(pointToPoint src/rob/pointToPoint.cpp)
@@ -76,4 +76,4 @@ add_executable(denseStereo src/vision/denseStereo.cpp)
 target_link_libraries(rrt ${ROBWORK_LIBRARIES} ${OpenCV_LIBS})
 target_link_libraries(pointToPoint ${ROBWORK_LIBRARIES} ${OpenCV_LIBS})
 target_link_libraries(parabolicBlend ${ROBWORK_LIBRARIES} ${OpenCV_LIBS})
-target_link_libraries(denseStereo ${ROBWORK_LIBRARIES} ${OpenCV_LIBS} ${PCL_LIBS})
+target_link_libraries(denseStereo ${ROBWORK_LIBRARIES} ${OpenCV_LIBS})
