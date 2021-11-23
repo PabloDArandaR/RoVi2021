@@ -5,18 +5,12 @@
 #include <cstdlib>
 #include <stdlib.h> 
 
-#include <rw/rw.hpp>
-#include <rwlibs/pathplanners/rrt/RRTPlanner.hpp>
-#include <rwlibs/pathplanners/rrt/RRTQToQPlanner.hpp>
-#include <rwlibs/proximitystrategies/ProximityStrategyFactory.hpp>
-#include <rw/kinematics/Kinematics.hpp>
-#include <rw/sensor/Camera.hpp>
-#include <rwlibs/simulation/SimulatedCamera.hpp>
 #include <rw/core/PropertyMap.hpp>
 #include <rw/core/Ptr.hpp>
 #include <rw/kinematics/State.hpp>
 #include <rw/loaders/WorkCellLoader.hpp>
 #include <rwlibs/simulation/GLFrameGrabber.hpp>
+#include <rwlibs/simulation/SimulatedCamera.hpp>
 #include <rwslibs/rwstudioapp/RobWorkStudioApp.hpp>
 
 #include <opencv2/opencv.hpp>
@@ -60,6 +54,7 @@ int main()
     const std::string wcFile = "../resources/Project_WorkCell/Scene.wc.xml";
     std::cout << "Trying to use workcell " << wcFile <<  std::endl;
     std::string deviceName = "UR-6-85-5-A";
+    const WorkCell::Ptr wc = WorkCellLoader::Factory::load (wcFile);
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Set some variables
@@ -138,14 +133,14 @@ int main()
         //Since the cameras are parallel, the images are rectified already
 
     // Compute disparity map
-    cv::Mat colors = left;
-    cv::cvtColor(right, right, cv::COLOR_RGB2GRAY);
-    cv::cvtColor(left, left, cv::COLOR_RGB2GRAY);
+    //cv::Mat colors = left;
+    //cv::cvtColor(right, right, cv::COLOR_RGB2GRAY);
+    //cv::cvtColor(left, left, cv::COLOR_RGB2GRAY);
 
-    cv::Mat disp = DisparitySGBM(left, right, 21, 10);
+    //cv::Mat disp = DisparitySGBM(left, right, 21, 10);
 
     // Compute point cloud
-    cv::Mat points = reproject3D(disp, defineQ(width, height));
+    //cv::Mat points = reproject3D(disp, defineQ(width, height));
     //pclCloud::Ptr pointCloud = obtainPointCloud(std::string filename, cv::Mat points, cv::Mat colors, double max_z)
 
     // Filter/segment the point cloud
@@ -155,7 +150,5 @@ int main()
     // Local pose estimation to find the object pose
 
     return 0;
-})
-;}
-
+}
 
