@@ -221,7 +221,7 @@ int main(int argc, char** argv)
             // Path 2
             rw::trajectory::QPath path2;
             t.resetAndResume();
-            planner->query(pickPose, endPose,path1,MAXTIME);
+            planner->query(pickPose, endPose,path2,MAXTIME);
             t.pause();
 
             std::cout << "Path2 of length " << path2.size() << " found in " << t.getTime() << " seconds." << std::endl;
@@ -233,16 +233,34 @@ int main(int argc, char** argv)
             mydata << t.getTime() << "," << path2.size() << "," << extend << "," << trial << "\n";
             
             // visualize them
-            double time = 0.0;
-    		rw::trajectory::TimedStatePath tStatePath;
-		    for(uint i=0; i<path2.size(); i+=1)
+            if ((extend == 0.1) && (trial == 0))
             {
-        	    device->setQ(path2.at(i), state);
-        	    tStatePath.push_back(rw::trajectory::TimedState(time,state));
-		        time += 0.01;
-    		}   
+                double time = 0.0;
+                rw::trajectory::TimedStatePath tStatePath;
+                for(uint i=0; i<path2.size(); i+=1)
+                {
+                    device->setQ(path1.at(i), state);
+                    tStatePath.push_back(rw::trajectory::TimedState(time,state));
+                    time += 0.1;
+                }
+                double initial_time = time;
+                for(uint i=0; i<10; i+=1)
+                {
+                    device->setQ(interpolator.x(time - initial_time), state);
+                    tStatePath.push_back(rw::trajectory::TimedState(time,state));
+                    time += 0.1;
+                }
+                for(uint i=0; i<path2.size(); i+=1)
+                {
+                    device->setQ(path2.at(i), state);
+                    tStatePath.push_back(rw::trajectory::TimedState(time,state));
+                    time += 0.1;
+                }
 
-    		rw::loaders::PathLoader::storeTimedStatePath(*wc, tStatePath, "RRT.rwplay");
+                rw::loaders::PathLoader::storeTimedStatePath(*wc, tStatePath, "RRT1.rwplay");
+
+            }
+
 
         }
     }
