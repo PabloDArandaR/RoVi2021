@@ -91,10 +91,13 @@ int main(int argc, char** argv)
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Pre-obtain the poses of the robot
-    rw::math::Q midPose, endPose;
+    rw::math::Q initialPose, approxPose, pickPose, endPose;
 
-    // Put the Robot in the grasping position
-    rw::math::Transform3D<> TR = rw::kinematics::Kinematics::frameTframe(RobBase, bottleUp, state);
+    // Initial pose
+    initialPose = device->getQ(wc->getDefaultState());
+
+    // Put the Robot in the approx pick position
+    rw::math::Transform3D<> TR = rw::kinematics::Kinematics::frameTframe(RobBase, bottle_approx, state);
     rw::math::Transform3D<> targetAt = TR * TTool;
     rw::invkin::ClosedFormIKSolverUR::Ptr solverUR = rw::common::ownedPtr(new rw::invkin::ClosedFormIKSolverUR (device, state));
     std::vector<rw::math::Q> solutions = solverUR->solve(targetAt, state);
@@ -105,10 +108,28 @@ int main(int argc, char** argv)
         if (checkCollisions(device, state, detector, sol))
         {
             //std::cout << "Found a pose with no collision!" << std::endl;
-            midPose = sol;
+            approxPose = sol;
             break;
         }
     }
+
+    // Put the Robot in the pick position
+    TR = rw::kinematics::Kinematics::frameTframe(RobBase, bottleUp, state);
+    targetAt = TR * TTool;
+    solverUR = rw::common::ownedPtr(new rw::invkin::ClosedFormIKSolverUR (device, state));
+    solutions = solverUR->solve(targetAt, state);
+    std::cout << "  -Solutions for the pickup:\n";
+    for (rw::math::Q sol: solutions)
+    {
+        std::cout << "     - Solution:" << sol << std::endl;
+        if (checkCollisions(device, state, detector, sol))
+        {
+            //std::cout << "Found a pose with no collision!" << std::endl;
+            pickPose = sol;
+            break;
+        }
+    }
+
     // Put the Robot in the objective position
     TR = rw::kinematics::Kinematics::frameTframe(RobBase, objectiveUp, state);
     targetAt = TR * TTool;
@@ -126,8 +147,14 @@ int main(int argc, char** argv)
         }
     }
 
-    std::cout << " - The found poses are: \n - " << midPose << "\n - " << endPose << std::endl;
+    // Obtain the interpolator and subpath for the approx position
+    int n_poses {10};
+    rw::trajectory::LinearInterpolator<rw::math::Q> interpolator (approxPose, endPose, 1);
 
+    std::cout << " - The found poses are: \n - " << pickPose << "\n - " << endPose << std::endl;
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // The whole movement
     for (double extend = 0.1; extend <= 1.0 ; extend+=0.1)
     {
         for(int trial = 0; trial < 40; trial++) 
@@ -170,29 +197,47 @@ int main(int argc, char** argv)
             rw::pathplanning::QSampler::Ptr sampler = rw::pathplanning::QSampler::makeConstrained(rw::pathplanning::QSampler::makeUniform(device),constraint.getQConstraintPtr());
             rw::math::QMetric::Ptr metric = rw::math::MetricFactory::makeEuclidean<rw::math::Q>();
             rw::pathplanning::QToQPlanner::Ptr planner = rwlibs::pathplanners::RRTPlanner::makeQToQPlanner(constraint, sampler, metric, extend, rwlibs::pathplanners::RRTPlanner::RRTConnect);
-    
-            rw::trajectory::QPath path;
             rw::common::Timer t;
+    
+            // Path 1
+            rw::trajectory::QPath path1;
             t.resetAndResume();
-            planner->query(midPose,endPose,path,MAXTIME);
+            planner->query(initialPose, approxPose,path1,MAXTIME);
             t.pause();
             double distance = 0;
 
-            std::cout << "Path of length " << path.size() << " found in " << t.getTime() << " seconds." << std::endl;
+            std::cout << "Path1 of length " << path1.size() << " found in " << t.getTime() << " seconds." << std::endl;
             if (t.getTime() >= MAXTIME)
             {
                 std::cout << "Notice: max time of " << MAXTIME << " seconds reached." << std::endl;
             }
-            std::cout << "Variables to introduce: "<< t.getTime() << "," << path.size() << "," << extend << "," << trial << "\n";
-            //mydata << "time,distance,extend,trial" << "\n";
-            mydata << t.getTime() << "," << path.size() << "," << extend << "," << trial << "\n";
+            std::cout << "Variables to introduce: "<< t.getTime() << "," << path1.size() << "," << extend << "," << trial << "\n";
+            mydata << t.getTime() << "," << path1.size() << "," << extend << "," << trial << "\n";
+
+            // Perform the gripping
+            device->setQ(pickPose, state);
+            rw::kinematics::Kinematics::gripFrame(bottleGrasp_frame, Grasp, state);
+
+            // Path 2
+            rw::trajectory::QPath path2;
+            t.resetAndResume();
+            planner->query(pickPose, endPose,path1,MAXTIME);
+            t.pause();
+
+            std::cout << "Path2 of length " << path2.size() << " found in " << t.getTime() << " seconds." << std::endl;
+            if (t.getTime() >= MAXTIME)
+            {
+                std::cout << "Notice: max time of " << MAXTIME << " seconds reached." << std::endl;
+            }
+            std::cout << "Variables to introduce: "<< t.getTime() << "," << path2.size() << "," << extend << "," << trial << "\n";
+            mydata << t.getTime() << "," << path2.size() << "," << extend << "," << trial << "\n";
             
             // visualize them
             double time = 0.0;
     		rw::trajectory::TimedStatePath tStatePath;
-		    for(int i=0; i<path.size(); i+=1)
+		    for(uint i=0; i<path2.size(); i+=1)
             {
-        	    device->setQ(path.at(i), state);
+        	    device->setQ(path2.at(i), state);
         	    tStatePath.push_back(rw::trajectory::TimedState(time,state));
 		        time += 0.01;
     		}   
