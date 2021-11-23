@@ -10,7 +10,6 @@
 #include <rwlibs/proximitystrategies/ProximityStrategyFactory.hpp>
 #include <rw/kinematics/Kinematics.hpp>
 
-#include "interpol.cpp"
 #include "geomSolution.cpp"
 
 typedef rw::models::WorkCell Cell;

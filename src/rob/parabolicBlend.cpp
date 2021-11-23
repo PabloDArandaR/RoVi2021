@@ -14,7 +14,6 @@
 //#include <rw/trajectory.hpp>
 #include <rw/math.hpp>
 #include <rw/invkin.hpp>
-#include "interpol.cpp"
 #include "geomSolution.cpp"
 
 typedef rw::models::WorkCell Cell;
