@@ -27,7 +27,7 @@ rw::math::Q findSolution(std::vector<rw::math::Q> solutionVector)
     {    
         for (rw::math::Q sol: solutionVector)
         {
-            if ((sol[2] < 0) && (sol[3] < 0.1))
+            if ((sol[2] < 0) && (sol[3] > -3) && (sol[3] < -0.5) && (sol[5] <= 0))
             {
                 return sol;
             }

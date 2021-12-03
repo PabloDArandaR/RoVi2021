@@ -10,7 +10,7 @@
 #include <rwlibs/proximitystrategies/ProximityStrategyFactory.hpp>
 #include <rw/kinematics/Kinematics.hpp>
 
-#include "geomSolution.cpp"
+#include "aux/geomSolution.cpp"
 
 typedef rw::models::WorkCell Cell;
 typedef rw::kinematics::Frame Frame;
@@ -26,18 +26,16 @@ int main()
     double approxDuration {3.0};
     double linearDuration {3.0};
     double duration {0.0};
-    std::string pathName {"pointToPoint.csv"};
-    std::string pointName {"pointPoint.csv"};
     const std::string wcFile = "../resources/Project_WorkCell/Scene.wc.xml";
     const std::string deviceName = "UR-6-85-5-A";
     std::fstream data, point;
     int nApprox {100}, nLinear{100};
 
     // File cleaning
-    char toDelete1[] = "pointToPoint.csv";
-    char toDelete2[] = "pointPoint.csv";
-    std::remove(toDelete1);
-    std::remove(toDelete2);
+    char pathName[] = "../results/pointToPoint.csv";
+    char pointName[] = "../results/pointPoint.csv";
+    std::remove(pathName);
+    std::remove(pointName);
 
     // Initiate State and WorkCell
     std::cout << "Trying to use workcell " << wcFile << " and device " << deviceName << std::endl;
@@ -66,10 +64,10 @@ int main()
     // Initialize the frame variables
 
     // Read the frames of the objects.
-    Frame *bottle_frame = wc->findFrame("BottleLateral");
+    Frame *bottle_frame = wc->findFrame("BottleUp");
     Frame *bottleGrasp_frame = wc->findFrame("Bottle");
     Frame *bottle_approx = wc->findFrame("BottleApprox");
-    Frame *objective_frame = wc->findFrame("Objective");
+    Frame *objective_frame = wc->findFrame("ObjectiveUp");
     Frame *objectiveApprox_frame = wc->findFrame("ObjectiveApprox");
     Frame * RobBase = wc->findFrame("URReference");
     Frame * Grasp = wc->findFrame("GraspTCP");
@@ -94,13 +92,17 @@ int main()
         rw::math::Transform3D<> targetAt = TR * TTool;
         rw::invkin::ClosedFormIKSolverUR::Ptr solverUR = rw::common::ownedPtr(new rw::invkin::ClosedFormIKSolverUR (device, state));
         std::vector<rw::math::Q> solutions = solverUR->solve(targetAt, state);
-        approximation1.push_back(findSolution(solutions));
+        std::cout << "Shape of solutions vector:  " << solutions.size() << std::endl;
+        rw::math::Q solution = findSolution(solutions);
+        approximation1.push_back(solution);
 
         // Grasping point
         TR = rw::kinematics::Kinematics::frameTframe(RobBase, bottle_frame, state);
         targetAt = TR * TTool;
         solutions = solverUR->solve(targetAt, state);
-        approximation1.push_back(findSolution(solutions));
+        std::cout << "Shape of solutions vector:  " << solutions.size() << std::endl;
+        solution = findSolution(solutions);
+        approximation1.push_back(solution);
     }
 
     std::vector<std::string> frames = {"CrossPoint1", "CrossPoint2", "CrossPoint3", "CrossPoint4", "CrossPoint5", "CrossPoint6"};
@@ -116,7 +118,10 @@ int main()
         rw::math::Transform3D<> targetAt = TR * TTool;
         rw::invkin::ClosedFormIKSolverUR::Ptr solverUR = rw::common::ownedPtr(new rw::invkin::ClosedFormIKSolverUR (device, state));
         std::vector<rw::math::Q> solutions = solverUR->solve(targetAt, state);
-        wholePath.push_back(findSolution(solutions));
+        std::cout << " -- Evaluating frame: " << frameName << std::endl;
+        std::cout << "      Shape of solutions vector:  " << solutions.size() << std::endl;
+        rw::math::Q solution = findSolution(solutions);
+        wholePath.push_back(solution);
     }
 
     approximation2.push_back(wholePath[wholePath.size()-1]);
@@ -125,13 +130,17 @@ int main()
         rw::math::Transform3D<> targetAt = TR * TTool;
         rw::invkin::ClosedFormIKSolverUR::Ptr solverUR = rw::common::ownedPtr(new rw::invkin::ClosedFormIKSolverUR (device, state));
         std::vector<rw::math::Q> solutions = solverUR->solve(targetAt, state);
-        approximation2.push_back(findSolution(solutions));
+        std::cout << "Shape of solutions vector:  " << solutions.size() << std::endl;
+        rw::math::Q solution = findSolution(solutions);
+        approximation2.push_back(solution);
 
         // Grasping point
         TR = rw::kinematics::Kinematics::frameTframe(RobBase, objective_frame, state);
         targetAt = TR * TTool;
         solutions = solverUR->solve(targetAt, state);
-        approximation2.push_back(findSolution(solutions));
+        std::cout << "Shape of solutions vector:  " << solutions.size() << std::endl;
+        solution = findSolution(solutions);
+        approximation2.push_back(solution);
     }
 
     data.open(pathName, std::ios::trunc);
@@ -268,7 +277,7 @@ int main()
 
     data.close();
     point.close();
-    rw::loaders::PathLoader::storeTimedStatePath(*wc, tStatePath, "pathPoint.rwplay");
+    rw::loaders::PathLoader::storeTimedStatePath(*wc, tStatePath, "../results/replayPointToPoint.rwplay");
 
     std::cout << "Exiting...\n" << std::endl;
 

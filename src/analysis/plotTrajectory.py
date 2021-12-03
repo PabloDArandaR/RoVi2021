@@ -18,7 +18,7 @@ def multiPlot(figOriginal, axOriginal, data, nRows, nColumns, x, title=""):
 def addPoints(figOriginal, axOriginal, nRow, nCol, points, t):
     print(f"The shape of the input axis is: {axOriginal.shape}")
     for i in range(0, points.shape[1]):
-        axOriginal[int(i/nCol)][i%nCol].scatter(t, points[:,i])
+        axOriginal[int(i/nCol)][i%nCol].scatter(t, points[:,i], s=10)
         axOriginal[int(i/nCol)][i%nCol].set_title(f"Joint {i+1}")
 
     return figOriginal, axOriginal

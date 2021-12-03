@@ -14,7 +14,8 @@
 //#include <rw/trajectory.hpp>
 #include <rw/math.hpp>
 #include <rw/invkin.hpp>
-#include "geomSolution.cpp"
+
+#include "aux/geomSolution.cpp"
 
 typedef rw::models::WorkCell Cell;
 typedef rw::kinematics::Frame Frame;
@@ -30,19 +31,17 @@ int main()
     double approxDuration {3.0};
     double linearDuration {3.0};
     double duration {0.0};
-    double tau {1.0};
-    std::string pathName {"blend.csv"};
-    std::string pointName {"pointBlend.csv"};
+    double tau {1.45};
     const std::string wcFile = "../resources/Project_WorkCell/Scene.wc.xml";
     const std::string deviceName = "UR-6-85-5-A";
     std::fstream data, point;
     int nApprox {100}, nLinear{100}, nBlend{100};
 
     // File cleaning
-    char toDelete1[] = "blend.csv";
-    char toDelete2[] = "pointBlend.csv";
-    std::remove(toDelete1);
-    std::remove(toDelete2);
+    char pathName[] = "../results/blend.csv";
+    char pointName[] = "../results/pointBlend.csv";
+    std::remove(pathName);
+    std::remove(pointName);
 
     // Initiate State and WorkCell
     std::cout << "Trying to use workcell " << wcFile << " and device " << deviceName << std::endl;
@@ -71,10 +70,10 @@ int main()
     // Initialize the frame variables
 
     // Read the frames of the objects.
-    Frame *bottle_frame = wc->findFrame("BottleLateral");
+    Frame *bottle_frame = wc->findFrame("BottleUp");
     Frame *bottleGrasp_frame = wc->findFrame("Bottle");
     Frame *bottle_approx = wc->findFrame("BottleApprox");
-    Frame *objective_frame = wc->findFrame("Objective");
+    Frame *objective_frame = wc->findFrame("ObjectiveUp");
     Frame *objectiveApprox_frame = wc->findFrame("ObjectiveApprox");
     Frame * RobBase = wc->findFrame("URReference");
     Frame * Grasp = wc->findFrame("GraspTCP");
@@ -108,6 +107,8 @@ int main()
         approximation1.push_back(findSolution(solutions));
     }
 
+
+    // Intermediate points for blending:
     std::vector<std::string> frames = {"CrossPoint1", "CrossPoint2", "CrossPoint3", "CrossPoint4", "CrossPoint5", "CrossPoint6"};
     wholePath.push_back(approximation1[approximation1.size()-1]);
     for (std::string frameName: frames)
@@ -124,6 +125,7 @@ int main()
         wholePath.push_back(findSolution(solutions));
     }
 
+    // Approximation 2:
     approximation2.push_back(wholePath[wholePath.size()-1]);
     {   
         rw::math::Transform3D<> TR = rw::kinematics::Kinematics::frameTframe(RobBase, objectiveApprox_frame, state);
@@ -315,7 +317,7 @@ int main()
 
     data.close();
     point.close();
-    rw::loaders::PathLoader::storeTimedStatePath(*wc, tStatePath, "pathBlend.rwplay");
+    rw::loaders::PathLoader::storeTimedStatePath(*wc, tStatePath, "../results/replayBlend.rwplay");
 
     std::cout << "Exiting...\n" << std::endl;
 
