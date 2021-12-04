@@ -17,7 +17,7 @@
 #include <opencv2/calib3d.hpp>
 #include <opencv2/core.hpp>
 
-#include "stereoAid.cpp"
+#include "aux/stereoAid.cpp"
 
 // #include <pcl/point_types.h>
 // #include <pcl/point_cloud.h>
@@ -43,8 +43,8 @@ using rw::sensor::Image;
 using namespace rwlibs::simulation;
 using namespace rws;
 
-const int width {200}, height {200};
-const float fov {1.0};
+const int width {640}, height {480};
+const float fov {50.0};
 
 
 int main()
@@ -73,81 +73,78 @@ int main()
     {
         rws::RobWorkStudio* const rwstudio = app.getRobWorkStudio ();
         rwstudio->postOpenWorkCell (wcFile);
-        rw::common::TimerUtil::sleepMs (5000);
+        rw::common::TimerUtil::sleepMs (500);
 
         const rw::graphics::SceneViewer::Ptr gldrawer = rwstudio->getView ()->getSceneViewer ();
         const rwlibs::simulation::GLFrameGrabber::Ptr framegrabber =
             rw::core::ownedPtr (new rwlibs::simulation::GLFrameGrabber (width, height, fov));
         framegrabber->init (gldrawer);
+        static const double DT {0.001};
+        const Simulator::UpdateInfo info (DT);
+        State state = wc->getDefaultState();
+        int cnt = 0;
+
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        // Camera left
         rwlibs::simulation::SimulatedCamera::Ptr simcamLeft =
-            rw::core::ownedPtr (new rwlibs::simulation::SimulatedCamera ("SimulatedCamera", fov, leftCamera_frame, framegrabber));
-        rwlibs::simulation::SimulatedCamera::Ptr simcamRight =
-            rw::core::ownedPtr (new rwlibs::simulation::SimulatedCamera ("SimulatedCamera", fov, rightCamera_frame, framegrabber));
+            rw::core::ownedPtr (new rwlibs::simulation::SimulatedCamera ("Camera", fov, leftCamera_frame, framegrabber));
         
-        // Initializing cameras
+        // Initializing camera
         simcamLeft->setFrameRate (100);
         simcamLeft->initialize ();
         simcamLeft->start ();
         simcamLeft->acquire ();
+
+        const Image *imgL;
+        cnt = 0;
+        std::cout << "[NOTE] Finding left camera.\n";
+        while (!simcamLeft->isImageReady())
+        {
+            if (!simcamLeft->isImageReady()){
+                std::cout << "       -Left camera isn't ready\n";
+            }
+            simcamLeft->update(info, state);
+            cnt++;
+        }
+
+        std::cout << "[NOTE] Found the cameras and writing image after " << cnt << " tries." << std::endl;
+        imgL = simcamLeft->getImage();
+        imgL->saveAsPPM("../resources/leftImage.ppm");
+        simcamLeft->stop();
+
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        // Camera right
+        rwlibs::simulation::SimulatedCamera::Ptr simcamRight =
+            rw::core::ownedPtr (new rwlibs::simulation::SimulatedCamera ("Camera", fov, rightCamera_frame, framegrabber));
+        
+        // Initializing camera
         simcamRight->setFrameRate (100);
         simcamRight->initialize ();
         simcamRight->start ();
         simcamRight->acquire ();
 
-        static const double DT {0.001};
-        const Simulator::UpdateInfo info (DT);
-        State state = wc->getDefaultState();
-        int cnt = 0;
-        const Image *imgL, *imgR;
-        while ((!simcamLeft->isImageReady()) && (!simcamRight->isImageReady()))
+        const Image *imgR;
+        cnt = 0;
+        std::cout << "[NOTE] Finding right camera.\n";
+        while (!simcamRight->isImageReady())
         {
-            std::cout << "[NOTE] At least one of the cameras is not ready." << std::endl;
-            simcamLeft->update(info, state);
+            if (!simcamRight->isImageReady()){
+                std::cout << "       -Right camera isn't ready\n";
+            }
             simcamRight->update(info, state);
             cnt++;
         }
 
-        imgL = simcamLeft->getImage();
+        std::cout << "[NOTE] Found the right camera and writing image after " << cnt << " tries." << std::endl;
         imgR = simcamRight->getImage();
-
-        imgL->saveAsPPM("leftImage.ppm");
-        imgR->saveAsPPM("rightImage.ppm");
-
-        simcamLeft->stop();
+        imgR->saveAsPPM("../resources/rightImage.ppm");
         simcamRight->stop();
+
+
         app.close();
     };
 
     RWS_END ();
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    // Obtain the images
-
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Dense stereo implementation 
-
-    // Rectify and undistort images (if necessary)
-    
-        //Since the cameras are parallel, the images are rectified already
-
-    // Compute disparity map
-    //cv::Mat colors = left;
-    //cv::cvtColor(right, right, cv::COLOR_RGB2GRAY);
-    //cv::cvtColor(left, left, cv::COLOR_RGB2GRAY);
-
-    //cv::Mat disp = DisparitySGBM(left, right, 21, 10);
-
-    // Compute point cloud
-    //cv::Mat points = reproject3D(disp, defineQ(width, height));
-    //pclCloud::Ptr pointCloud = obtainPointCloud(std::string filename, cv::Mat points, cv::Mat colors, double max_z)
-
-    // Filter/segment the point cloud
-
-    // Global pose estimation to find the object pose
-
-    // Local pose estimation to find the object pose
 
     return 0;
 }
