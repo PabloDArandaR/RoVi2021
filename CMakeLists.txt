@@ -5,7 +5,7 @@ project(RoVi2021)
 SET(ROOT ${CMAKE_CURRENT_SOURCE_DIR})
 
 # Setting up compiler version
-add_compile_options(-std=c++11)
+add_compile_options(-std=c++14)
 
 # Set the RobWork root
 SET(RW_ROOT $ENV{RW_ROOT})
@@ -57,18 +57,25 @@ LINK_DIRECTORIES( ${ROBWORKSIM_LIBRARY_DIRS})
 
  
 # Use PCL
-find_package(PCL REQUIRED COMPONENTS common io)
+find_package(PCL REQUIRED COMPONENTS common io visualization)
 #find_package(PCL 1.2 REQUIRED)
 include_directories(${PCL_SEARCH_INCLUDE_DIRS})
 link_directories(${PCL_SEARCH_LIBRARY_DIRS})
 add_definitions(${PCL_SEARCH_DEFINITIONS})
 
-add_executable(rrt src/rob/RRT.cpp)
-add_executable(pointToPoint src/rob/pointToPoint.cpp)
-add_executable(parabolicBlend src/rob/parabolicBlend.cpp)
-add_executable(denseStereo src/vision/denseStereo.cpp)
+add_executable(robrrt src/rob/RRT.cpp)
+add_executable(robPtP src/rob/pointToPoint.cpp)
+add_executable(robBlend src/rob/parabolicBlend.cpp)
+add_executable(visionCaptureImage src/vision/captureImage.cpp)
+add_executable(visionDisparity src/vision/disparity.cpp)
+add_executable(visionPCLcalculation src/vision/dispToPCL.cpp)
+add_executable(visionPCLviewer src/vision/viewPCL.cpp)
 
-target_link_libraries(rrt ${ROBWORK_LIBRARIES} ${OpenCV_LIBS} ${Qt5Widgets_LIBS} ${Qt5Core_LIBS})
-target_link_libraries(pointToPoint ${ROBWORK_LIBRARIES} ${OpenCV_LIBS} ${Qt5Widgets_LIBS} ${Qt5Core_LIBS})
-target_link_libraries(parabolicBlend ${ROBWORK_LIBRARIES} ${OpenCV_LIBS} ${Qt5Widgets_LIBS} ${Qt5Core_LIBS})
-target_link_libraries(denseStereo ${ROBWORK_LIBRARIES} ${OpenCV_LIBS} ${PCL_LIBRARIES})
+
+target_link_libraries(robrrt ${ROBWORK_LIBRARIES} ${OpenCV_LIBS} ${Qt5Widgets_LIBS} ${Qt5Core_LIBS})
+target_link_libraries(robPtP ${ROBWORK_LIBRARIES} ${OpenCV_LIBS} ${Qt5Widgets_LIBS} ${Qt5Core_LIBS})
+target_link_libraries(robBlend ${ROBWORK_LIBRARIES} ${OpenCV_LIBS} ${Qt5Widgets_LIBS} ${Qt5Core_LIBS})
+target_link_libraries(visionCaptureImage ${ROBWORK_LIBRARIES} ${OpenCV_LIBS} ${PCL_LIBRARIES} ${ROBWORKSIM_LIBRARIES} ${ROBWORKSTUDIO_LIBRARIES})
+target_link_libraries(visionDisparity ${ROBWORK_LIBRARIES} ${OpenCV_LIBS} ${PCL_LIBRARIES} ${ROBWORKSIM_LIBRARIES} ${ROBWORKSTUDIO_LIBRARIES})
+target_link_libraries(visionPCLcalculation ${ROBWORK_LIBRARIES} ${OpenCV_LIBS} ${PCL_LIBRARIES} ${ROBWORKSIM_LIBRARIES} ${ROBWORKSTUDIO_LIBRARIES})
+target_link_libraries(visionPCLviewer ${ROBWORK_LIBRARIES} ${OpenCV_LIBS} ${PCL_LIBRARIES} ${ROBWORKSIM_LIBRARIES} ${ROBWORKSTUDIO_LIBRARIES})
