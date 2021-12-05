@@ -33,7 +33,9 @@ typedef rw::kinematics::Frame Frame;
 typedef rw::models::Device Device;
 typedef rw::kinematics::State State;
 
-
+#define MIN_EXTEND 0.1 
+#define MAX_EXTEND 1.
+#define N_TRIALS 40 
 #define MAXTIME 60.
 
 int main(int argc, char** argv) 
@@ -242,9 +244,9 @@ int main(int argc, char** argv)
     // The whole movement
 
     // First pick pose
-    for (double extend = 0.1; extend <= 0.1 ; extend+=0.1)
+    for (double extend = MIN_EXTEND; extend <= MAX_EXTEND ; extend+=0.1)
     {
-        for(int trial = 0; trial < 1; trial++) 
+        for(int trial = 0; trial < N_TRIALS; trial++) 
         {
             std::cout << " ----------------------------- Extension: " << extend << "  ----- Trial: " << trial << "   --------------------------\n";
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -344,9 +346,9 @@ int main(int argc, char** argv)
     }
     
     // Second pick pose
-    for (double extend = 0.1; extend <= 0.1 ; extend+=0.1)
+    for (double extend = MIN_EXTEND; extend <= MAX_EXTEND ; extend+=0.1)
     {
-        for(int trial = 0; trial < 1; trial++) 
+        for(int trial = 0; trial < N_TRIALS; trial++) 
         {
             std::cout << " ----------------------------- Extension: " << extend << "  ----- Trial: " << trial << "   --------------------------\n";
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -444,9 +446,9 @@ int main(int argc, char** argv)
     }
     
     // Third pick pose
-    for (double extend = 0.1; extend <= 0.1 ; extend+=0.1)
+    for (double extend = MIN_EXTEND; extend <= MAX_EXTEND; extend+=0.1)
     {
-        for(int trial = 0; trial < 1; trial++) 
+        for(int trial = 0; trial < N_TRIALS; trial++) 
         {
             std::cout << " ----------------------------- Extension: " << extend << "  ----- Trial: " << trial << "   --------------------------\n";
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
