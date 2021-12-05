@@ -22,15 +22,18 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/calib3d.hpp>
 #include <opencv2/core.hpp>
+#include <opencv2/features2d.hpp>
 
 int main()
 {
 
     // Declare main variables
-
-    // Obtain the pictures from the cameras
+    cv::Mat left {cv::imread("../resource/leftImage.png")}, right {cv::imread("../resource/rightImage.png")};
 
     // Find features
+    std::cout << "Version: " << CV_VERSION << std::endl;
+
+    //cv::Ptr<cv::features2D::SIFT> detector = cv::features2D:SIFT::create(100);
 
     // Match features from one image in the other
 
